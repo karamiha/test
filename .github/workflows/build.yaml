@@ -1,0 +1,34 @@
+name: Build Report
+
+env:
+  TYPST_FONT_PATHS: ./fonts
+
+on:
+  push:
+
+jobs:
+  build_typst_documents:
+    name: Report Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v3
+      - name: Compile Report
+        run: typst compile main.typ main.pdf
+      - name: Get report no.
+        run: bash .ci/get_report_id.sh
+      - name: Rename files
+        run: |
+          mv main.pdf "${REPORT_ID}_Report.pdf"
+          mv executive.pdf "${REPORT_ID}_Executive Summary.pdf"
+          mv onepager.pdf "${REPORT_ID}_Overview.pdf"
+      - name: Create report artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "${{env.REPORT_ID}}_Penetration Test Report"
+          path: |
+            ${{env.REPORT_ID}}_Report.pdf
+            ${{env.REPORT_ID}}_Executive Summary.pdf
+            ${{env.REPORT_ID}}_Overview.pdf
